@@ -8,6 +8,10 @@ const initialItems = [
 
 export default function App() {
   const [items, setItems] = useState([]); // Packing List Array
+  const numItems = items.length;
+  const numPacked = items.filter((item) => item.packed).length;
+  const percentage = Math.round((numPacked / numItems) * 100);
+
   function handleAddItems(myItem) {
     // Move the function at App.jsx
     setItems((items) => [...items, myItem]);
@@ -36,7 +40,7 @@ export default function App() {
         onDeleteItems={handleDeleteItem}
         onToggleItem={handleToggleItem}
       />
-      <Stats />
+      <Stats items={numItems} numPacked={numPacked} percentage={percentage} />
     </div>
   );
 }
@@ -85,17 +89,47 @@ function Form({ onAddItems }) {
   );
 }
 function PackingList({ items, onDeleteItems, onToggleItem }) {
+  const [sortBy, setSortBy] = useState("input");
+
+  let sortedItems;
+
+  if (sortBy === "input") sortedItems = items;
+
+  if (sortBy === "description")
+    sortedItems = items
+      .slice()
+      .sort((a, b) => a.description.localeCompare(b.description));
+  if (sortBy === "packed")
+    sortedItems = items
+      .slice()
+      .sort((a, b) => Number(a.packed) - Number(b.packed));
+
   return (
-    <ul className="list">
-      {items.map((item, i) => (
-        <Item
-          item={item}
-          key={i}
-          onDeleteItems={onDeleteItems}
-          onToggleItem={onToggleItem}
-        />
-      ))}
-    </ul>
+    <div className="list">
+      <ul>
+        {sortedItems.map((item, i) => (
+          <Item
+            item={item}
+            key={i}
+            onDeleteItems={onDeleteItems}
+            onToggleItem={onToggleItem}
+          />
+        ))}
+      </ul>
+
+      <div className="actions">
+        <select
+          name=""
+          id=""
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+        >
+          <option value="input">Sort by Input</option>
+          <option value="description">Sort by Description</option>
+          <option value="packed">Sort by Packed</option>
+        </select>
+      </div>
+    </div>
   );
 }
 
@@ -114,10 +148,15 @@ function Item({ item, onDeleteItems, onToggleItem }) {
     </li>
   );
 }
-function Stats() {
+function Stats({ items, numPacked, percentage }) {
   return (
     <footer className="stats">
-      <em>You have X items on your list, and you already packed X (X%)</em>
+      <em>
+        You have {items} items on your list, and you already packed {numPacked}{" "}
+        ({percentage}%)
+      </em>
+      <br />
+      {percentage === 100 && <em>You got everything you need</em>}
     </footer>
   );
 }
