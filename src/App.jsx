@@ -7,11 +7,17 @@ const initialItems = [
 ];
 
 export default function App() {
+  const [items, setItems] = useState([]); // Packing List Array
+  function handleAddItems(myItem) {
+    // Move the function at App.jsx
+    setItems((items) => [...items, myItem]);
+  }
   return (
     <div>
       <Logo />
-      <Form />
-      <PackingList />
+      {/* pass handleAddItems as props */}
+      <Form onAddItems={handleAddItems} />
+      <PackingList items={items} />
       <Stats />
     </div>
   );
@@ -20,19 +26,22 @@ export default function App() {
 function Logo() {
   return <h1> 💼 Far Away 🌴 </h1>;
 }
-function Form() {
+function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
+
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!description) return; //Guard Clause
+    if (!description) return;
 
     const newItem = { description, quantity, packed: false, id: Date.now() };
-    console.log(newItem);
 
-    setDescription(""); // set default state
-    setQuantity(1); // set default state
+    // handleAddItems(newItem); before update
+    onAddItems(newItem); // after update
+
+    setDescription("");
+    setQuantity(1);
   }
   return (
     <form className="add-form" onSubmit={handleSubmit}>
@@ -57,10 +66,12 @@ function Form() {
     </form>
   );
 }
-function PackingList() {
+function PackingList({ items }) {
+  // accept items as props
   return (
     <ul className="list">
-      {initialItems.map((item, i) => (
+      {/* update the array - items */}
+      {items.map((item, i) => (
         <Item item={item} key={i} />
       ))}
     </ul>
@@ -71,8 +82,7 @@ function Item({ item }) {
   return (
     <li>
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-        {item.quantity}
-        {item.description}
+        {item.quantity} {item.description}
       </span>
       <button>❌</button>
     </li>
